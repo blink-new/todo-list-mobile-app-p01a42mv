@@ -12,16 +12,12 @@ interface Todo {
 const pastelColors = ["#E0E7FF", "#C7D2FE", "#B8B5FF", "#A5B4FC", "#F6F8FC"];
 
 export default function HomeScreen() {
-  const [todos, setTodos] = useState<Todo[]>(() => {
-    // Try to load from localStorage (web) or AsyncStorage (native) in a real app
-    return [];
-  });
+  const [todos, setTodos] = useState<Todo[]>([]);
   const [input, setInput] = useState("");
   const [error, setError] = useState("");
   const inputRef = useRef<TextInput>(null);
   const fadeAnim = useRef(new Animated.Value(0)).current;
 
-  // Animate on mount
   React.useEffect(() => {
     Animated.timing(fadeAnim, {
       toValue: 1,
@@ -138,7 +134,7 @@ export default function HomeScreen() {
         </View>
       ) : (
         <FlatList
-          data={todos.filter((t) => !t.completed)}
+          data={todos}
           renderItem={renderItem}
           keyExtractor={(item) => item.id}
           contentContainerStyle={{ paddingBottom: 32 }}
