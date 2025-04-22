@@ -2,13 +2,10 @@
 import { Stack, Tabs } from "expo-router";
 import { useFonts, Inter_400Regular, Inter_700Bold } from "@expo-google-fonts/inter";
 import { useEffect } from "react";
-import { useFrameworkReady } from "expo-router/build/hooks";
 import { GestureHandlerRootView } from "react-native-gesture-handler";
 import { View, ActivityIndicator } from "react-native";
 
 export default function RootLayout() {
-  useFrameworkReady(); // DO NOT REMOVE OR MODIFY
-
   const [fontsLoaded] = useFonts({
     Inter_400Regular,
     Inter_700Bold,
