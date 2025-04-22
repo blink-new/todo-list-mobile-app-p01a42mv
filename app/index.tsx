@@ -16,7 +16,7 @@ import {
   KeyboardAvoidingView,
   SafeAreaView,
   StatusBar,
-  ScrollView,
+  Appearance,
 } from "react-native";
 import { Plus, CheckCircle2, Trash2, Edit3, Calendar, Filter, X, Search } from "lucide-react-native";
 import AsyncStorage from "@react-native-async-storage/async-storage";
@@ -30,16 +30,25 @@ interface Todo {
   priority: "Low" | "Medium" | "High";
 }
 
-const pastelColors = ["#E0E7FF", "#C7D2FE", "#B8B5FF", "#A5B4FC", "#F6F8FC"];
+const iosBlue = "#007AFF";
+const iosGray = "#F2F2F7";
+const iosLightGray = "#FAFAFA";
+const iosBorder = "#E5E5EA";
+const iosRed = "#FF3B30";
+const iosYellow = "#FFD60A";
+const iosGreen = "#34C759";
+const iosText = "#1C1C1E";
+const iosSecondary = "#8E8E93";
+const iosShadow = "#00000022";
+
 const priorityColors = {
-  Low: "#A3F7B5",
-  Medium: "#FFF6A3",
-  High: "#F67280",
+  Low: iosGreen,
+  Medium: iosYellow,
+  High: iosRed,
 };
 
 const PRIORITY_OPTIONS: Array<Todo["priority"]> = ["Low", "Medium", "High"];
 const STORAGE_KEY = "TODO_LIST_V2";
-
 const { width: SCREEN_WIDTH } = Dimensions.get("window");
 
 export default function HomeScreen() {
@@ -170,7 +179,6 @@ export default function HomeScreen() {
           style={[
             styles.todoCard,
             {
-              backgroundColor: pastelColors[index % pastelColors.length],
               opacity: fadeAnim,
               transform: [
                 {
@@ -180,6 +188,8 @@ export default function HomeScreen() {
                   }),
                 },
               ],
+              borderColor: iosBorder,
+              backgroundColor: "#fff",
             },
           ]}
         >
@@ -188,11 +198,12 @@ export default function HomeScreen() {
               styles.todoText,
               {
                 flex: 1,
-                backgroundColor: "#fff",
+                backgroundColor: iosGray,
                 borderRadius: 8,
                 paddingHorizontal: 8,
                 fontSize: 16,
                 minHeight: 36,
+                color: iosText,
               },
             ]}
             value={editingText}
@@ -201,47 +212,50 @@ export default function HomeScreen() {
             onSubmitEditing={handleSaveEdit}
             returnKeyType="done"
             maxLength={80}
+            placeholder="Edit todo..."
+            placeholderTextColor={iosSecondary}
           />
           <TouchableOpacity
-            style={[styles.priorityChip, { backgroundColor: priorityColors[editingPriority], marginLeft: 8 }]}
+            style={[styles.priorityPill, { backgroundColor: priorityColors[editingPriority], marginLeft: 8 }]}
             onPress={() => {
               // Cycle priority
               const idx = PRIORITY_OPTIONS.indexOf(editingPriority);
               setEditingPriority(PRIORITY_OPTIONS[(idx + 1) % PRIORITY_OPTIONS.length]);
             }}
           >
-            <Text style={styles.priorityText}>{editingPriority}</Text>
+            <Text style={styles.priorityPillText}>{editingPriority}</Text>
           </TouchableOpacity>
           <TouchableOpacity
             style={{ marginLeft: 8 }}
             onPress={() => setShowEditDatePicker(true)}
             accessibilityLabel="Edit due date"
           >
-            <Calendar color="#7C83FD" size={22} />
+            <Calendar color={iosBlue} size={22} />
           </TouchableOpacity>
           <TouchableOpacity
             style={{ marginLeft: 8 }}
             onPress={handleSaveEdit}
             accessibilityLabel="Save edit"
           >
-            <CheckCircle2 color="#7C83FD" size={26} />
+            <CheckCircle2 color={iosBlue} size={26} />
           </TouchableOpacity>
           <TouchableOpacity
             style={{ marginLeft: 8 }}
             onPress={handleCancelEdit}
             accessibilityLabel="Cancel edit"
           >
-            <X color="#F67280" size={26} />
+            <X color={iosRed} size={26} />
           </TouchableOpacity>
           {showEditDatePicker && (
             <DateTimePicker
               value={editingDueDate || new Date()}
               mode="date"
-              display={Platform.OS === "ios" ? "inline" : "default"}
+              display={Platform.OS === "ios" ? "spinner" : "default"}
               onChange={(_, date) => {
                 setShowEditDatePicker(false);
                 if (date) setEditingDueDate(date);
               }}
+              accentColor={iosBlue}
             />
           )}
         </Animated.View>
@@ -253,7 +267,6 @@ export default function HomeScreen() {
         style={[
           styles.todoCard,
           {
-            backgroundColor: pastelColors[index % pastelColors.length],
             opacity: fadeAnim,
             transform: [
               {
@@ -263,6 +276,8 @@ export default function HomeScreen() {
                 }),
               },
             ],
+            borderColor: iosBorder,
+            backgroundColor: "#fff",
           },
         ]}
       >
@@ -272,7 +287,7 @@ export default function HomeScreen() {
           accessibilityLabel={item.completed ? "Mark as incomplete" : "Mark as complete"}
         >
           <CheckCircle2
-            color={item.completed ? "#7C83FD" : "#B8B5FF"}
+            color={item.completed ? iosBlue : iosSecondary}
             size={28}
             strokeWidth={item.completed ? 2.5 : 1.5}
             style={{ opacity: item.completed ? 1 : 0.5 }}
@@ -284,7 +299,7 @@ export default function HomeScreen() {
               styles.todoText,
               {
                 textDecorationLine: item.completed ? "line-through" : "none",
-                color: item.completed ? "#B8B5FF" : "#22223B",
+                color: item.completed ? iosSecondary : iosText,
                 opacity: item.completed ? 0.6 : 1,
                 fontSize: 16,
                 minHeight: 36,
@@ -295,12 +310,12 @@ export default function HomeScreen() {
             {item.text}
           </Text>
           <View style={{ flexDirection: "row", alignItems: "center", marginTop: 4, gap: 8 }}>
-            <View style={[styles.priorityChip, { backgroundColor: priorityColors[item.priority] }]}>
-              <Text style={styles.priorityText}>{item.priority}</Text>
+            <View style={[styles.priorityPill, { backgroundColor: priorityColors[item.priority] }]}>
+              <Text style={styles.priorityPillText}>{item.priority}</Text>
             </View>
             {item.dueDate && (
-              <View style={styles.dueDateChip}>
-                <Calendar color="#7C83FD" size={16} />
+              <View style={styles.dueDatePill}>
+                <Calendar color={iosBlue} size={16} />
                 <Text style={styles.dueDateText}>
                   {new Date(item.dueDate).toLocaleDateString()}
                 </Text>
@@ -313,14 +328,14 @@ export default function HomeScreen() {
           onPress={() => handleEdit(item)}
           accessibilityLabel="Edit todo"
         >
-          <Edit3 color="#7C83FD" size={22} />
+          <Edit3 color={iosBlue} size={22} />
         </TouchableOpacity>
         <TouchableOpacity
           style={styles.deleteBtn}
           onPress={() => handleDelete(item.id)}
           accessibilityLabel="Delete todo"
         >
-          <Trash2 color="#F67280" size={22} />
+          <Trash2 color={iosRed} size={22} />
         </TouchableOpacity>
       </Animated.View>
     );
@@ -328,28 +343,29 @@ export default function HomeScreen() {
 
   return (
     <SafeAreaView style={styles.safeArea}>
-      <StatusBar barStyle="dark-content" backgroundColor="#F6F8FC" />
+      <StatusBar barStyle="dark-content" backgroundColor={iosGray} />
       <KeyboardAvoidingView
         style={{ flex: 1 }}
         behavior={Platform.OS === "ios" ? "padding" : undefined}
         keyboardVerticalOffset={Platform.OS === "ios" ? 0 : 24}
       >
         <View style={styles.container}>
-          <Text style={styles.title}>My Todos</Text>
+          <Text style={styles.title}>Reminders</Text>
           <View style={styles.inputRow}>
             <TextInput
               ref={inputRef}
               style={styles.input}
-              placeholder="Add a new todo..."
-              placeholderTextColor="#B8B5FF"
+              placeholder="New Reminder"
+              placeholderTextColor={iosSecondary}
               value={input}
               onChangeText={setInput}
               onSubmitEditing={handleAddTodo}
               returnKeyType="done"
               maxLength={80}
+              selectionColor={iosBlue}
             />
             <TouchableOpacity
-              style={[styles.priorityChip, { backgroundColor: priorityColors[priority], marginLeft: 4 }]}
+              style={[styles.priorityPill, { backgroundColor: priorityColors[priority], marginLeft: 4 }]}
               onPress={() => {
                 // Cycle priority
                 const idx = PRIORITY_OPTIONS.indexOf(priority);
@@ -357,21 +373,21 @@ export default function HomeScreen() {
               }}
               accessibilityLabel="Change priority"
             >
-              <Text style={styles.priorityText}>{priority}</Text>
+              <Text style={styles.priorityPillText}>{priority}</Text>
             </TouchableOpacity>
             <TouchableOpacity
               style={{
                 marginLeft: 4,
                 padding: 8,
                 borderRadius: 8,
-                backgroundColor: dueDate ? "#E0E7FF" : "#fff",
+                backgroundColor: dueDate ? iosGray : "#fff",
                 justifyContent: "center",
                 alignItems: "center",
               }}
               onPress={() => setShowDatePicker(true)}
               accessibilityLabel="Pick due date"
             >
-              <Calendar color="#7C83FD" size={22} />
+              <Calendar color={iosBlue} size={22} />
             </TouchableOpacity>
             <TouchableOpacity
               style={styles.addBtn}
@@ -385,25 +401,27 @@ export default function HomeScreen() {
             <DateTimePicker
               value={dueDate || new Date()}
               mode="date"
-              display={Platform.OS === "ios" ? "inline" : "default"}
+              display={Platform.OS === "ios" ? "spinner" : "default"}
               onChange={(_, date) => {
                 setShowDatePicker(false);
                 if (date) setDueDate(date);
               }}
+              accentColor={iosBlue}
             />
           )}
           {error ? <Text style={styles.error}>{error}</Text> : null}
           <View style={styles.searchRow}>
             <View style={styles.searchBox}>
-              <Search color="#B8B5FF" size={18} style={{ marginRight: 4 }} />
+              <Search color={iosSecondary} size={18} style={{ marginRight: 4 }} />
               <TextInput
                 style={styles.searchInput}
-                placeholder="Search todos..."
-                placeholderTextColor="#B8B5FF"
+                placeholder="Search"
+                placeholderTextColor={iosSecondary}
                 value={search}
                 onChangeText={setSearch}
                 returnKeyType="search"
                 maxLength={40}
+                selectionColor={iosBlue}
               />
             </View>
             <TouchableOpacity
@@ -411,7 +429,7 @@ export default function HomeScreen() {
               onPress={() => setShowFilterModal(true)}
               accessibilityLabel="Filter todos"
             >
-              <Filter color="#7C83FD" size={22} />
+              <Filter color={iosBlue} size={22} />
             </TouchableOpacity>
           </View>
           <Modal
@@ -422,34 +440,34 @@ export default function HomeScreen() {
           >
             <View style={styles.modalOverlay}>
               <View style={styles.modalContent}>
-                <Text style={styles.modalTitle}>Filter Todos</Text>
+                <Text style={styles.modalTitle}>Filter</Text>
                 <Text style={styles.modalLabel}>Priority</Text>
                 <View style={{ flexDirection: "row", gap: 8, marginBottom: 16 }}>
                   {["", ...PRIORITY_OPTIONS].map((p) => (
                     <TouchableOpacity
                       key={p || "all"}
                       style={[
-                        styles.priorityChip,
+                        styles.priorityPill,
                         {
                           backgroundColor: p
                             ? priorityColors[p as Todo["priority"]]
-                            : "#E0E7FF",
+                            : iosGray,
                           borderWidth: filterPriority === p ? 2 : 0,
-                          borderColor: "#7C83FD",
+                          borderColor: iosBlue,
                         },
                       ]}
                       onPress={() => setFilterPriority(p as Todo["priority"] | "")}
                     >
-                      <Text style={styles.priorityText}>{p || "All"}</Text>
+                      <Text style={styles.priorityPillText}>{p || "All"}</Text>
                     </TouchableOpacity>
                   ))}
                 </View>
                 <Text style={styles.modalLabel}>Due Date</Text>
                 <TouchableOpacity
                   style={[
-                    styles.dueDateChip,
+                    styles.dueDatePill,
                     {
-                      backgroundColor: filterDate ? "#E0E7FF" : "#fff",
+                      backgroundColor: filterDate ? iosGray : "#fff",
                       marginBottom: 16,
                     },
                   ]}
@@ -458,7 +476,7 @@ export default function HomeScreen() {
                     setShowFilterModal(false);
                   }}
                 >
-                  <Calendar color="#7C83FD" size={18} />
+                  <Calendar color={iosBlue} size={18} />
                   <Text style={styles.dueDateText}>
                     {filterDate
                       ? new Date(filterDate).toLocaleDateString()
@@ -469,7 +487,7 @@ export default function HomeScreen() {
                       onPress={() => setFilterDate("")}
                       style={{ marginLeft: 8 }}
                     >
-                      <X color="#F67280" size={18} />
+                      <X color={iosRed} size={18} />
                     </TouchableOpacity>
                   ) : null}
                 </TouchableOpacity>
@@ -486,16 +504,17 @@ export default function HomeScreen() {
             <DateTimePicker
               value={filterDate ? new Date(filterDate) : new Date()}
               mode="date"
-              display={Platform.OS === "ios" ? "inline" : "default"}
+              display={Platform.OS === "ios" ? "spinner" : "default"}
               onChange={(_, date) => {
                 setShowDatePicker(false);
                 if (date) setFilterDate(date.toISOString().slice(0, 10));
               }}
+              accentColor={iosBlue}
             />
           )}
           {filteredTodos.length === 0 ? (
             <View style={styles.emptyState}>
-              <Text style={styles.emptyText}>No todos found.</Text>
+              <Text style={styles.emptyText}>No reminders.</Text>
             </View>
           ) : (
             <FlatList
@@ -517,21 +536,22 @@ export default function HomeScreen() {
 const styles = StyleSheet.create({
   safeArea: {
     flex: 1,
-    backgroundColor: "#F6F8FC",
+    backgroundColor: iosGray,
   },
   container: {
     flex: 1,
-    backgroundColor: "#F6F8FC",
-    paddingTop: 24,
-    paddingHorizontal: 16,
+    backgroundColor: iosGray,
+    paddingTop: 18,
+    paddingHorizontal: 12,
     width: "100%",
     maxWidth: 500,
     alignSelf: "center",
   },
   title: {
-    fontFamily: "Inter_700Bold",
+    fontFamily: Platform.OS === "ios" ? "System" : "Inter_700Bold",
+    fontWeight: "700",
     fontSize: 28,
-    color: "#7C83FD",
+    color: iosText,
     marginBottom: 14,
     letterSpacing: 0.5,
     textAlign: "center",
@@ -545,37 +565,36 @@ const styles = StyleSheet.create({
   input: {
     flex: 1,
     backgroundColor: "#fff",
-    borderRadius: 14,
+    borderRadius: 12,
     paddingHorizontal: 14,
     paddingVertical: Platform.OS === "ios" ? 12 : 10,
-    fontSize: 15,
-    fontFamily: "Inter_400Regular",
-    color: "#22223B",
-    shadowColor: "#7C83FD",
-    shadowOpacity: 0.06,
-    shadowRadius: 4,
-    elevation: 2,
+    fontSize: 16,
+    fontFamily: Platform.OS === "ios" ? "System" : "Inter_400Regular",
+    color: iosText,
+    borderWidth: 1,
+    borderColor: iosBorder,
     minHeight: 40,
     maxWidth: SCREEN_WIDTH - 120,
   },
   addBtn: {
-    backgroundColor: "#7C83FD",
-    borderRadius: 14,
+    backgroundColor: iosBlue,
+    borderRadius: 16,
     padding: 12,
     justifyContent: "center",
     alignItems: "center",
-    shadowColor: "#7C83FD",
+    marginLeft: 2,
+    shadowColor: iosShadow,
     shadowOpacity: 0.12,
     shadowRadius: 6,
     elevation: 3,
-    marginLeft: 2,
   },
   error: {
-    color: "#F67280",
-    fontFamily: "Inter_400Regular",
+    color: iosRed,
+    fontFamily: Platform.OS === "ios" ? "System" : "Inter_400Regular",
     marginBottom: 8,
     marginLeft: 4,
     fontSize: 14,
+    textAlign: "center",
   },
   todoCard: {
     flexDirection: "row",
@@ -584,7 +603,9 @@ const styles = StyleSheet.create({
     paddingVertical: 14,
     paddingHorizontal: 12,
     marginBottom: 10,
-    shadowColor: "#7C83FD",
+    borderWidth: 1,
+    backgroundColor: "#fff",
+    shadowColor: iosShadow,
     shadowOpacity: 0.08,
     shadowRadius: 8,
     elevation: 2,
@@ -597,7 +618,8 @@ const styles = StyleSheet.create({
   todoText: {
     flex: 1,
     fontSize: 16,
-    fontFamily: "Inter_400Regular",
+    fontFamily: Platform.OS === "ios" ? "System" : "Inter_400Regular",
+    color: iosText,
   },
   editBtn: {
     marginLeft: 6,
@@ -614,42 +636,44 @@ const styles = StyleSheet.create({
     marginTop: 32,
   },
   emptyText: {
-    color: "#B8B5FF",
-    fontFamily: "Inter_400Regular",
+    color: iosSecondary,
+    fontFamily: Platform.OS === "ios" ? "System" : "Inter_400Regular",
     fontSize: 17,
     marginTop: 8,
     textAlign: "center",
   },
-  priorityChip: {
-    borderRadius: 8,
-    paddingHorizontal: 8,
+  priorityPill: {
+    borderRadius: 999,
+    paddingHorizontal: 12,
     paddingVertical: 4,
     alignItems: "center",
     justifyContent: "center",
     minWidth: 44,
     minHeight: 28,
+    backgroundColor: iosGray,
   },
-  priorityText: {
-    fontFamily: "Inter_700Bold",
+  priorityPillText: {
+    fontFamily: Platform.OS === "ios" ? "System" : "Inter_700Bold",
+    fontWeight: "600",
     fontSize: 13,
-    color: "#22223B",
+    color: iosText,
     textAlign: "center",
   },
-  dueDateChip: {
+  dueDatePill: {
     flexDirection: "row",
     alignItems: "center",
-    backgroundColor: "#E0E7FF",
-    borderRadius: 8,
-    paddingHorizontal: 8,
+    backgroundColor: iosGray,
+    borderRadius: 999,
+    paddingHorizontal: 10,
     paddingVertical: 2,
     marginLeft: 0,
     gap: 4,
     minHeight: 24,
   },
   dueDateText: {
-    fontFamily: "Inter_400Regular",
+    fontFamily: Platform.OS === "ios" ? "System" : "Inter_400Regular",
     fontSize: 13,
-    color: "#7C83FD",
+    color: iosBlue,
     marginLeft: 2,
   },
   searchRow: {
@@ -663,33 +687,33 @@ const styles = StyleSheet.create({
     flexDirection: "row",
     alignItems: "center",
     backgroundColor: "#fff",
-    borderRadius: 10,
+    borderRadius: 12,
     paddingHorizontal: 10,
     paddingVertical: 5,
-    shadowColor: "#7C83FD",
-    shadowOpacity: 0.04,
-    shadowRadius: 2,
-    elevation: 1,
+    borderWidth: 1,
+    borderColor: iosBorder,
     minHeight: 36,
   },
   searchInput: {
     flex: 1,
-    fontFamily: "Inter_400Regular",
+    fontFamily: Platform.OS === "ios" ? "System" : "Inter_400Regular",
     fontSize: 15,
-    color: "#22223B",
+    color: iosText,
     paddingVertical: 0,
   },
   filterBtn: {
-    backgroundColor: "#E0E7FF",
-    borderRadius: 10,
+    backgroundColor: iosGray,
+    borderRadius: 12,
     padding: 8,
     marginLeft: 6,
     justifyContent: "center",
     alignItems: "center",
+    borderWidth: 1,
+    borderColor: iosBorder,
   },
   modalOverlay: {
     flex: 1,
-    backgroundColor: "rgba(34,34,59,0.18)",
+    backgroundColor: "rgba(60,60,67,0.18)",
     justifyContent: "center",
     alignItems: "center",
   },
@@ -697,36 +721,41 @@ const styles = StyleSheet.create({
     backgroundColor: "#fff",
     borderRadius: 18,
     padding: 24,
-    width: "90%",
+    width: "92%",
     alignItems: "stretch",
-    shadowColor: "#7C83FD",
+    shadowColor: iosShadow,
     shadowOpacity: 0.12,
     shadowRadius: 12,
     elevation: 8,
+    borderWidth: 1,
+    borderColor: iosBorder,
   },
   modalTitle: {
-    fontFamily: "Inter_700Bold",
+    fontFamily: Platform.OS === "ios" ? "System" : "Inter_700Bold",
+    fontWeight: "700",
     fontSize: 20,
-    color: "#7C83FD",
+    color: iosText,
     marginBottom: 16,
     textAlign: "center",
   },
   modalLabel: {
-    fontFamily: "Inter_700Bold",
+    fontFamily: Platform.OS === "ios" ? "System" : "Inter_700Bold",
+    fontWeight: "600",
     fontSize: 15,
-    color: "#22223B",
+    color: iosText,
     marginBottom: 6,
     marginTop: 8,
   },
   modalCloseBtn: {
-    backgroundColor: "#7C83FD",
-    borderRadius: 10,
+    backgroundColor: iosBlue,
+    borderRadius: 12,
     paddingVertical: 10,
     marginTop: 12,
   },
   modalCloseText: {
     color: "#fff",
-    fontFamily: "Inter_700Bold",
+    fontFamily: Platform.OS === "ios" ? "System" : "Inter_700Bold",
+    fontWeight: "600",
     fontSize: 16,
     textAlign: "center",
   },
